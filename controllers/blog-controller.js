@@ -44,8 +44,8 @@ export const addBlog = async (req, res, next) => {
     await existingUser.save({ session });
     await session.commitTransaction();
   } catch (err) {
-   console.log(err);
-   return res.status(500).json({ message: err });
+    console.log(err);
+    return res.status(500).json({ message: err });
   }
   return res.status(200).json({ blog });
 };
@@ -91,9 +91,11 @@ export const deleteBlog = async (req, res, next) => {
   let blog;
 
   try {
-    blog = await Blog.findByIdAndRemove(id);
+    blog = await Blog.findByIdAndRemove(id).populate("user");
+    await blog.user.blogs.pull(blog);
+    await blog.user.save();
   } catch (err) {
-    return console.log(err);
+    console.log(err);
   }
   if (!blog) {
     return res.status(500).json({ message: "Unable to delete the blog" });
